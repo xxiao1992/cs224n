@@ -36,11 +36,29 @@ def forward_backward_prop(data, labels, params, dimensions):
     b2 = np.reshape(params[ofs:ofs + Dy], (1, Dy))
 
     ### YOUR CODE HERE: forward propagation
-    raise NotImplementedError
+    h1 = np.dot(data, W1) + b1
+    h1_sig = sigmoid(h1)
+    scores = np.dot(h1_sig, W2) + b2
+    probs = softmax(scores)
+
+    N = data.shape[0]
+    y = np.argmax(labels, axis=1)
+    cost = np.sum(-np.log(probs[np.arange(N), y]))
+    cost /= N
     ### END YOUR CODE
 
     ### YOUR CODE HERE: backward propagation
-    raise NotImplementedError
+    dscores = probs
+    dscores[range(N),y] -= 1
+    dscores /= N
+    gradW2 = np.dot(h1_sig.T, dscores)
+    gradb2 = np.sum(dscores, axis=0, keepdims=True)
+
+    gradh1_sig = np.dot(dscores, W2.T)
+    gradh1 =  gradh1_sig * h1 * (1 - h1) 
+
+    gradW1 = np.dot(data.T, gradh1)
+    gradb1 = np.sum(gradh1, axis=0, keepdims=True)
     ### END YOUR CODE
 
     ### Stack gradients (do not modify)
@@ -80,7 +98,7 @@ def your_sanity_checks():
     """
     print "Running your sanity checks..."
     ### YOUR CODE HERE
-    raise NotImplementedError
+    # raise NotImplementedError
     ### END YOUR CODE
 
 
