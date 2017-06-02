@@ -43,19 +43,16 @@ def forward_backward_prop(data, labels, params, dimensions):
 
     N = data.shape[0]
     y = np.argmax(labels, axis=1)
-    cost = np.sum(-np.log(probs[np.arange(N), y]))
-    cost /= N
+    cost = np.sum(-np.log(probs) * labels) / N
     ### END YOUR CODE
 
     ### YOUR CODE HERE: backward propagation
-    dscores = probs
-    dscores[range(N),y] -= 1
-    dscores /= N
+    dscores = (probs - labels) / N
     gradW2 = np.dot(h1_sig.T, dscores)
     gradb2 = np.sum(dscores, axis=0, keepdims=True)
 
     gradh1_sig = np.dot(dscores, W2.T)
-    gradh1 =  gradh1_sig * h1 * (1 - h1) 
+    gradh1 =  gradh1_sig * h1_sig * (1 - h1_sig) 
 
     gradW1 = np.dot(data.T, gradh1)
     gradb1 = np.sum(gradh1, axis=0, keepdims=True)
