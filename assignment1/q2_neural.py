@@ -49,13 +49,13 @@ def forward_backward_prop(data, labels, params, dimensions):
     ### YOUR CODE HERE: backward propagation
     dscores = (probs - labels) / N
     gradW2 = np.dot(h1_sig.T, dscores)
-    gradb2 = np.sum(dscores, axis=0, keepdims=True)
+    gradb2 = np.sum(dscores, axis=0)
 
     gradh1_sig = np.dot(dscores, W2.T)
-    gradh1 =  gradh1_sig * h1_sig * (1 - h1_sig) 
+    gradh1 =  gradh1_sig * sigmoid_grad(h1_sig) 
 
     gradW1 = np.dot(data.T, gradh1)
-    gradb1 = np.sum(gradh1, axis=0, keepdims=True)
+    gradb1 = np.sum(gradh1, axis=0)
     ### END YOUR CODE
 
     ### Stack gradients (do not modify)
