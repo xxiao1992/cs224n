@@ -15,7 +15,8 @@ def normalizeRows(x):
     """
 
     ### YOUR CODE HERE
-    raise NotImplementedError
+    l2norm = np.sqrt((x * x).sum(axis=1, keepdims=True))
+    x /= l2norm
     ### END YOUR CODE
 
     return x
