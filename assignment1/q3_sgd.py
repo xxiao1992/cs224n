@@ -85,9 +85,9 @@ def sgd(f, x0, step, iterations, postprocessing=None, useSaved=False,
 
         cost = None
         ### YOUR CODE HERE
-        cost, gradient = f(x)
-        x -= gradient * step
-        postprocessing(x)
+        cost, grad = f(x)
+        x -= step * grad
+        x = postprocessing(x)
         ### END YOUR CODE
 
         if iter % PRINT_EVERY == 0:
@@ -134,7 +134,6 @@ def your_sanity_checks():
     """
     print "Running your sanity checks..."
     ### YOUR CODE HERE
-    # raise NotImplementedError
     ### END YOUR CODE
 
 

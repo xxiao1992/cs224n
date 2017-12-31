@@ -15,8 +15,8 @@ def normalizeRows(x):
     """
 
     ### YOUR CODE HERE
-    l2norm = np.sqrt((x * x).sum(axis=1, keepdims=True))
-    x /= l2norm
+    s = np.sqrt(np.sum(x ** 2, axis=1, keepdims=True))
+    x = x / s
     ### END YOUR CODE
 
     return x
@@ -59,14 +59,15 @@ def softmaxCostAndGradient(predicted, target, outputVectors, dataset):
     """
 
     ### YOUR CODE HERE
-    V, N = outputVectors.shape
-
-    yhat = softmax(np.dot(predicted, outputVectors.T))
+    yhat = softmax(np.dot(outputVectors, predicted))
     cost = - np.log(yhat[target])
-    dcost = yhat
-    dcost[target] -= 1
-    gradPred = np.dot(dcost, outputVectors)
-    grad = np.dot(dcost.reshape((V,1)), predicted.reshape(1,N))
+
+    # create one hot encoding for target
+    target_one_hot = np.zeros_like(yhat)
+    target_one_hot[target] = 1
+
+    gradPred = np.dot((yhat - target_one_hot), outputVectors)
+    grad = np.dot((yhat - target_one_hot).reshape(-1, 1), predicted.reshape(1,-1))
     ### END YOUR CODE
 
     return cost, gradPred, grad
@@ -104,7 +105,16 @@ def negSamplingCostAndGradient(predicted, target, outputVectors, dataset,
     indices.extend(getNegativeSamples(target, dataset, K))
 
     ### YOUR CODE HERE
-    raise NotImplementedError
+    sig_o = sigmoid(np.dot(outputVectors[target], predicted))
+    sig_k = sigmoid(-np.dot(outputVectors[indices[1:]],predicted))
+    cost = - np.log(sig_o) - np.sum(np.log(sig_k))
+
+    gradPred = (sig_o - 1) * outputVectors[target] - np.dot(sig_k - 1, outputVectors[indices[1:]])
+
+    grad = np.zeros_like(outputVectors)
+    grad[target] = (sig_o - 1) * predicted
+    for i, ind in enumerate(indices[1:]):
+        grad[ind] += - (sig_k[i] - 1) * predicted
     ### END YOUR CODE
 
     return cost, gradPred, grad
@@ -117,7 +127,7 @@ def skipgram(currentWord, C, contextWords, tokens, inputVectors, outputVectors,
     Implement the skip-gram model in this function.
 
     Arguments:
-    currrentWord -- a string of the current center word
+    currentWord -- a string of the current center word
     C -- integer, context size
     contextWords -- list of no more than 2*C strings, the context words
     tokens -- a dictionary that maps words to their indices in
@@ -139,7 +149,13 @@ def skipgram(currentWord, C, contextWords, tokens, inputVectors, outputVectors,
     gradOut = np.zeros(outputVectors.shape)
 
     ### YOUR CODE HERE
-    raise NotImplementedError
+    predicted = inputVectors[tokens[currentWord]]
+    for cword in contextWords:
+        target = tokens[cword]
+        ccost, gradPred, grad = word2vecCostAndGradient(predicted, target, outputVectors, dataset)
+        cost += ccost
+        gradIn[tokens[currentWord]] += gradPred
+        gradOut += grad
     ### END YOUR CODE
 
     return cost, gradIn, gradOut
@@ -163,7 +179,14 @@ def cbow(currentWord, C, contextWords, tokens, inputVectors, outputVectors,
     gradOut = np.zeros(outputVectors.shape)
 
     ### YOUR CODE HERE
-    raise NotImplementedError
+    predicted = np.sum(inputVectors[[tokens[x] for x in contextWords]], axis=0)
+
+    target = tokens[currentWord]
+    cost, gradPred, grad = word2vecCostAndGradient(predicted, target, outputVectors, dataset)
+
+    for cword in contextWords:
+        gradIn[tokens[cword]] += gradPred
+    gradOut = grad
     ### END YOUR CODE
 
     return cost, gradIn, gradOut
