@@ -49,8 +49,6 @@ def getSentenceFeatures(tokens, wordVectors, sentence):
     sentVector = np.zeros((wordVectors.shape[1],))
 
     ### YOUR CODE HERE
-    # import pdb
-    # pdb.set_trace()
     ind = [tokens[word] for word in sentence]
     sentVector = np.mean(wordVectors[ind,:], axis=0)
     ### END YOUR CODE
