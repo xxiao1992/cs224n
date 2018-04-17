@@ -22,7 +22,7 @@ class PartialParse(object):
 
         ### YOUR CODE HERE
         self.stack = ["ROOT"]
-        self.buffer = self.sentence
+        self.buffer = list(sentence)
         self.dependencies = []
         ### END YOUR CODE
 
@@ -75,6 +75,22 @@ def minibatch_parse(sentences, model, batch_size):
     """
 
     ### YOUR CODE HERE
+    partial_parses = [PartialParse(s) for s in sentences]
+    unfinished_parses = list(partial_parses)
+    while len(unfinished_parses) > 0:
+        done = []
+        batch_parses = unfinished_parses[:batch_size]
+        transitions = model.predict(batch_parses)
+
+        for sen in range(len(transitions)):
+            batch_parses[sen].parse_step(transitions[sen])
+            if len(batch_parses[sen].stack) == 1 and len(batch_parses[sen].buffer) == 0:
+                done.append(sen)
+        for i in reversed(done):
+            unfinished_parses.pop(i)
+
+    dependencies = [pp.dependencies for pp in partial_parses]
+
     ### END YOUR CODE
 
     return dependencies
