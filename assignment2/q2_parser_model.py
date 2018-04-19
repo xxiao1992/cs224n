@@ -110,7 +110,9 @@ class ParserModel(Model):
             embeddings: tf.Tensor of shape (None, n_features*embed_size)
         """
         ### YOUR CODE HERE
-
+        embeddings_all = tf.Variable(self.pretrained_embeddings)
+        embed = tf.nn.embedding_lookup(embeddings_all, self.input_placeholder)
+        embeddings = tf.reshape(embed, (-1, self.config.n_features * self.config.embed_size))
         ### END YOUR CODE
         return embeddings
 
@@ -137,6 +139,19 @@ class ParserModel(Model):
 
         x = self.add_embedding()
         ### YOUR CODE HERE
+        xavier_initializer = xavier_weight_init()
+
+        shape_W = (self.config.n_features * self.config.embed_size, self.config.hidden_size)
+        W = tf.get_variable('W', shape=shape_W, initializer=xavier_initializer)
+        b1 = tf.get_variable('b1', shape=self.config.hidden_size, initializer=tf.zeros_initializer)
+        h = tf.nn.relu(tf.matmul(x, W) + b1)
+        h_drop = tf.nn.dropout(h, 1 - self.dropout_placeholder)
+
+        shape_U = (self.config.hidden_size, self.config.n_classes)
+        U = tf.get_variable('U', shape=shape_U, initializer=xavier_initializer)
+        b2 = tf.get_variable('b2', shape=self.config.n_classes, initializer=tf.zeros_initializer)
+
+        pred = tf.matmul(h_drop, U) + b2
         ### END YOUR CODE
         return pred
 
@@ -154,6 +169,8 @@ class ParserModel(Model):
             loss: A 0-d tensor (scalar)
         """
         ### YOUR CODE HERE
+        loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=self.labels_placeholder,
+                                                                      logits=pred))
         ### END YOUR CODE
         return loss
 
@@ -178,6 +195,7 @@ class ParserModel(Model):
             train_op: The Op for training.
         """
         ### YOUR CODE HERE
+        train_op = tf.train.AdamOptimizer(learning_rate=self.config.lr).minimize(loss)
         ### END YOUR CODE
         return train_op
 
@@ -261,5 +279,5 @@ def main(debug=True):
 
 
 if __name__ == '__main__':
-    main()
+    main(debug=False)
 
